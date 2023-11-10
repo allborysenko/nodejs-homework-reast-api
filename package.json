@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "engines": {
-    "node": "^18.*",
-    "npm": "^9.*"
+    "node": "20.x"
+    
   },
   "scripts": {
     "start": "cross-env NODE_ENV=production node ./server.js",
