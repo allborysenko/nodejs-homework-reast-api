@@ -103,22 +103,46 @@ const updateSubscription = async (req, res) => {
 
 const updateAvatar = async (req, res) => {
   const { _id } = req.user;
+
+  if (!req.file) {
+    const defaultAvatarPath =
+      "https://cdn-icons-png.flaticon.com/256/805/805439.png";
+    const avatar = await Jimp.read(defaultAvatarPath);
+
+    await avatar.resize(250, 250);
+
+    const filename = `${_id}_default_avatar.jpg`;
+    const resultUpload = path.join(avatarsDir, filename);
+
+    await avatar.write(resultUpload);
+
+    await User.findByIdAndUpdate(_id, {
+      avatarURL: path.join("avatars", filename),
+    });
+    return res.json({ avatarURL: path.join("avatars", filename) });
+  }
+
   const { path: tempUpload, originalname } = req.file;
   const filename = `${_id}_${originalname}`;
   const resultUpload = path.join(avatarsDir, filename);
-  await fs.rename(tempUpload, resultUpload);
 
-  const avatar = await Jimp.read(resultUpload);
+  try {
+    await fs.rename(tempUpload, resultUpload);
 
-  await avatar.resize(250, 250);
-  await avatar.write(resultUpload);
+    const avatar = await Jimp.read(resultUpload);
+    await avatar.resize(250, 250);
+    await avatar.write(resultUpload);
 
-  const avatarURL = path.join("avatars", filename);
-  await User.findByIdAndUpdate(_id, { avatarURL });
+    const avatarURL = path.join("avatars", filename);
+    await User.findByIdAndUpdate(_id, { avatarURL });
 
-  res.json({
-    avatarURL,
-  });
+    res.json({
+      avatarURL,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 module.exports = {
