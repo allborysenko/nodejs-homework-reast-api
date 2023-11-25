@@ -101,7 +101,7 @@ const updateSubscription = async (req, res) => {
   res.json({ message: `Subscription changed to ${result.subscription}` });
 };
 
-const updateAvatar = async (req, res) => {
+const updateAvatar = async (req, res, next) => {
   const { _id } = req.user;
 
   if (!req.file) {
@@ -140,8 +140,7 @@ const updateAvatar = async (req, res) => {
       avatarURL,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    next(error);
   }
 };
 
